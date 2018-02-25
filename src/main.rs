@@ -4,10 +4,10 @@ extern crate graphics;
 extern crate glutin_window;
 extern crate opengl_graphics;
 
-use piston::window::WindowSettings;
+use piston::window::{Window, WindowSettings, Size};
 use piston::event_loop::*;
 use piston::input::*;
-use glutin_window::GlutinWindow as Window;
+use glutin_window::GlutinWindow;
 use opengl_graphics::{GlGraphics, OpenGL};
 use graphics::types::Color;
 
@@ -33,18 +33,20 @@ pub struct App {
 }
 
 impl App {
-    fn render(&mut self, args: &RenderArgs) {
+    fn render(&mut self, args: &RenderArgs, size: Size) {
         use graphics::*;
 
         let universe = &self.universe;
         self.gl.draw(args.viewport(), |ctr, gl| {
             clear(BACKGROUND, gl);
 
-            let zoom = 0.0015;
-            let t = ctr.transform.trans(2560.0/2.0, 1080.0/2.0).scale(zoom, zoom);
+            let zoom = 0.0018;
+            let t = ctr.transform.trans((size.width as f64)/2.0,
+                                        (size.height as f64)/2.0);
+            let zt = t.scale(zoom, zoom);
 
             for p in universe {
-                p.render(&ctr.draw_state, t, gl);
+                p.render(&ctr.draw_state, t, zt, gl);
             }
         });
     }
@@ -53,13 +55,13 @@ impl App {
         let mut updates = Vec::new();
 
         for p in &self.universe {
-            updates.push(p.update(&self.universe, args.dt * 100.0));
+            updates.push(p.update(&self.universe, args.dt * 50.0));
         }
 
         for i in 0..self.universe.len() {
             self.universe[i].pos = updates[i].0;
             self.universe[i].vel = updates[i].1;
-            println!("new p: {:?}", self.universe[i].pos);
+            //println!("new p: {:?}", self.universe[i].pos);
         }
     }
 }
@@ -69,7 +71,7 @@ fn main() {
     let opengl = OpenGL::V3_2;
 
     // Create a Glutin window
-    let mut window: Window = WindowSettings::new("Orbits", [600, 1080]).samples(8)
+    let mut window: GlutinWindow = WindowSettings::new("Orbits", [600, 1080]).samples(8)
                              .opengl(opengl).exit_on_esc(true).build().unwrap();
 
     // Create a new game and run it
@@ -97,7 +99,7 @@ fn main() {
         //pos: [DIST_EART/12.0, 0.0],
         //pos: [DIST_EART/6.0, 0.0],
         vel: [0.0, 0.0],
-        tiny: 0.0,//100.0,
+        tiny: 80.0,//100.0,
     };
 
     let moon = Planet {
@@ -105,8 +107,8 @@ fn main() {
         mass:  MASS_MOON,
         radius: 1_737.0,
         pos: [BASE + DIST_MOON, 0.0],
-        vel: [0.0, -8.0],
-        tiny: 0.0,
+        vel: [-5.0, -10.0],
+        tiny: 20.0,
     };
 
     //app.universe.push(sun);
@@ -117,7 +119,7 @@ fn main() {
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
         if let Some(r) = e.render_args() {
-            app.render(&r);
+            app.render(&r, window.size());
         }
         if let Some(u) = e.update_args() {
             app.update(&u);
