@@ -29,7 +29,7 @@ impl Planet {
             if (p as *const _) != (self as *const _) {
                 let dist = sub(self.pos, p.pos);
                 let numer = self.mass * p.mass;
-                let denom = dot(dist, dist).sqrt();
+                let denom = dot(dist, dist);
                 let force = mul_scalar(unit(dist), -G * numer / denom);
                 net_force = add(net_force, force);
             }
