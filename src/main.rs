@@ -46,7 +46,7 @@ impl App {
             let zt = t.scale(zoom, zoom);
 
             for p in universe {
-                p.render(&ctr.draw_state, t, zt, gl);
+                p.render(&ctr.draw_state, t, zt, zoom, gl);
             }
         });
     }

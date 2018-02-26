@@ -48,6 +48,7 @@ impl Planet {
     pub fn render<G: Graphics>(&self, draw_state: &DrawState,
                                pos_trans: Matrix2d,
                                zoomed_trans: Matrix2d,
+                               zoom: f64,
                                gl: &mut G) {
         let e = Ellipse::new(self.color);
 
@@ -58,7 +59,7 @@ impl Planet {
         if self.tiny > 0.0 {
             let r = self.tiny;
             let b = Ellipse::new_border(self.color, 0.5);
-            let pos = mul_scalar(self.pos, 0.0018);
+            let pos = mul_scalar(self.pos, zoom);
             b.draw([pos[0] - r, pos[1] - r, r * 2.0, r * 2.0],
                    draw_state, pos_trans, gl);
         }
