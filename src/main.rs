@@ -25,6 +25,7 @@ const DIST_MOON: f64 = 384400.0; // km
 pub struct App {
     gl: GlGraphics,
     universe: Vec<Planet>,
+    zoom: f64,
 }
 
 impl App {
@@ -32,10 +33,10 @@ impl App {
         use graphics::*;
 
         let universe = &self.universe;
+        let zoom = self.zoom;
         self.gl.draw(args.viewport(), |ctr, gl| {
             clear(BACKGROUND, gl);
 
-            let zoom = 0.000004;
             let t = ctr.transform.trans((size.width as f64)/2.0,
                                         (size.height as f64)/2.0);
             let zt = t.scale(zoom, zoom);
@@ -72,6 +73,7 @@ fn main() {
     let mut app = App {
         gl: GlGraphics::new(opengl),
         universe: Vec::new(),
+        zoom: 0.000004,
     };
 
     let sun = Planet {
@@ -114,5 +116,12 @@ fn main() {
         if let Some(u) = e.update_args() {
             app.update(&u);
         }
+
+        e.mouse_scroll(|dx, dy| app.zoom += dy * 1e-6);
+        /*
+        if let Some(m) = e.mouse_scroll_args() {
+            app.zoom += m[1] * 1e-6;
+        }
+        */
     }
 }
