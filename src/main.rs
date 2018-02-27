@@ -109,7 +109,7 @@ fn main() {
         radius: 6_371.0,
         pos: [DIST_EART, 0.0],
         vel: [0.0, -29.3],
-        tiny: 8.0,//100.0,
+        tiny: 8.0,
     };
 
     let moon = Planet {
@@ -135,7 +135,7 @@ fn main() {
             app.update(&u);
         }
 
-        e.mouse_scroll(|dx, dy| app.zoom += dy * 1e-6);
+        e.mouse_scroll(|_dx, dy| app.zoom += dy * 1e-6);
         /*
         if let Some(m) = e.mouse_scroll_args() {
             app.zoom += m[1] * 1e-6;
