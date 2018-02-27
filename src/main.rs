@@ -9,12 +9,16 @@ use piston::event_loop::*;
 use piston::input::*;
 use glutin_window::GlutinWindow;
 use opengl_graphics::{GlGraphics, OpenGL};
+use opengl_graphics::glyph_cache::{GlyphCache};
+use graphics::{Graphics};
 use graphics::types::Color;
+use graphics::character::CharacterCache;
 
 mod planet;
 use planet::Planet;
 
 const BACKGROUND: Color = [0.2, 0.2, 0.2, 1.0];
+const WHITE: Color = [1.0, 1.0, 1.0, 0.8];
 
 //http://curious.astro.cornell.edu/about-us/41-our-solar-system/the-earth/orbit/
 //85-how-fast-does-the-earth-go-at-perihelion-and-aphelion-intermediate
@@ -29,10 +33,13 @@ pub struct App {
 }
 
 impl App {
-    fn render(&mut self, args: &RenderArgs, size: Size) {
+    fn render<C>(&mut self, args: &RenderArgs, size: Size, glyphs: &mut C)
+        where C: CharacterCache<Texture=<GlGraphics as Graphics>::Texture> {
+
         use graphics::*;
 
         let universe = &self.universe;
+
         let zoom = self.zoom;
         self.gl.draw(args.viewport(), |ctr, gl| {
             clear(BACKGROUND, gl);
@@ -44,7 +51,14 @@ impl App {
             for p in universe {
                 p.render(&ctr.draw_state, t, zt, zoom, gl);
             }
+
+            let zoom_level_text = format!("Zoom: {}", zoom);
+            let text_trans = ctr.transform.trans(2.0, size.height as f64 - 2.0);
+            text(WHITE, 14, &zoom_level_text, &mut *glyphs, text_trans, gl);
+            //normal_font.draw(&zoom_level_text, glyphs,
+            //                 &ctr.draw_state, ctr.transform, gl);
         });
+
     }
 
     fn update(&mut self, args: &UpdateArgs) {
@@ -68,6 +82,10 @@ fn main() {
     // Create a Glutin window
     let mut window: GlutinWindow = WindowSettings::new("Orbits", [600, 1080]).samples(8)
                              .opengl(opengl).exit_on_esc(true).build().unwrap();
+
+    let ref mut glyphs = GlyphCache::new("DejaVuSans.ttf")
+                         .expect("Could not load font");
+
 
     // Create a new game and run it
     let mut app = App {
@@ -111,7 +129,7 @@ fn main() {
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
         if let Some(r) = e.render_args() {
-            app.render(&r, window.size());
+            app.render(&r, window.size(), glyphs);
         }
         if let Some(u) = e.update_args() {
             app.update(&u);
